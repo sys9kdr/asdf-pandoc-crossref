@@ -24,6 +24,38 @@ sort_versions() {
 		LC_ALL=C sort -t. -k 1,1 -k 2,2n -k 3,3n -k 4,4n -k 5,5n | awk '{print $2}'
 }
 
+compare_versions() {
+    local IFS=.
+    local i version1=($1) version2=($2)
+
+    # Fill empty fields with zeros
+    for ((i=${#version1[@]}; i<${#version2[@]}; i++)); do
+        version1[i]=0
+    done
+
+    for ((i=0; i<${#version2[@]}; i++)); do
+        if [[ "${version1[i]}" == "${version2[i]}" ]]; then
+            continue  # Versions are equal, check the next component
+        elif [[ "${version1[i]}" =~ ^[0-9]+$ && "${version2[i]}" =~ ^[0-9]+$ ]]; then
+            # Numeric comparison for components that are both numeric
+            if ((10#${version1[i]} > 10#${version2[i]})); then
+                return 0   # Version $1 is greater
+            else
+                return 1   # Version $1 is not greater
+            fi
+        else
+            # Alphanumeric comparison for components that are not both numeric
+            if [[ "${version1[i]}" > "${version2[i]}" ]]; then
+                return 0   # Version $1 is greater
+            else
+                return 1   # Version $1 is not greater
+            fi
+        fi
+    done
+
+    return 1   # Versions are equal
+}
+
 list_github_tags() {
 	git ls-remote --tags --refs "$GH_REPO" |
 		grep -o 'refs/tags/.*' | cut -d/ -f3- |
