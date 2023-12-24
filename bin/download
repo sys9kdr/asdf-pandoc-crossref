@@ -14,7 +14,7 @@ mkdir -p "$ASDF_DOWNLOAD_PATH"
 # pandoc-crossref-Linux.tar.xz
 # pandoc-crossref-macOS.tar.xz
 # pandoc-crossref-Windows.7z
-download_file="$ASDF_DOWNLOAD_PATH/$TOOL_NAME-$(get_os).tar.xz"
+download_file="$TOOL_NAME-$(get_os).tar.xz"
 
 # Download tar.gz file to the download directory
 DOWNLOAD_URL_PREFIX="https://github.com/lierdakil/pandoc-crossref/releases/download"
@@ -22,7 +22,7 @@ download_url="${DOWNLOAD_URL_PREFIX}/${ASDF_INSTALL_VERSION}/${download_file}"
 download_release "$ASDF_INSTALL_VERSION" "$download_file" "$download_url"
 
 #  Extract contents of tar.gz file into the download directory
-tar -xzf "$release_file" -C "$ASDF_DOWNLOAD_PATH" || fail "Could not extract $release_file"
+tar -xzf "$download_file" -C "$ASDF_DOWNLOAD_PATH" || fail "Could not extract $release_file"
 
 # Remove the tar.gz file since we don't need to keep it
 rm "$release_file"
