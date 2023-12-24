@@ -27,8 +27,6 @@ THIS PLUGIN CURRENTLY UNDER DEVELOPMENT, NOT WORKING.
 Plugin:
 
 ```shell
-asdf plugin add pandoc-crossref
-# or
 asdf plugin add pandoc-crossref https://github.com/sys9kdr/asdf-pandoc-crossref.git
 ```
 

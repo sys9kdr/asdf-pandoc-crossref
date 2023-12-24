@@ -70,13 +70,12 @@ download_release() {
 	local version filename url
 	version="$1"
 	filename="$2"
-
-	# TODO: Adapt the release URL convention for pandoc-crossref
-	url="$GH_REPO/archive/v${version}.tar.gz"
+	url="$3"
 
 	echo "* Downloading $TOOL_NAME release $version..."
 	curl "${curl_opts[@]}" -o "$filename" -C - "$url" || fail "Could not download $url"
 }
+
 
 install_version() {
 	local install_type="$1"
