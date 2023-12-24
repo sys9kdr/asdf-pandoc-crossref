@@ -14,7 +14,7 @@ mkdir -p "$ASDF_DOWNLOAD_PATH"
 # pandoc-crossref-Linux.tar.xz
 # pandoc-crossref-macOS.tar.xz
 # pandoc-crossref-Windows.7z
-release_file="$ASDF_DOWNLOAD_PATH/$TOOL_NAME-$ASDF_INSTALL_VERSION.tar.gz"
+release_file="$ASDF_DOWNLOAD_PATH/$TOOL_NAME-$(get_os).tar.xz"
 
 # Download tar.gz file to the download directory
 download_release "$ASDF_INSTALL_VERSION" "$release_file"

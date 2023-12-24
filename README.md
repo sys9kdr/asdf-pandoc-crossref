@@ -1,3 +1,5 @@
+THIS PLUGIN CURRENTLY UNDER DEVELOPMENT, NOT WORKING.
+
 <div align="center">
 
 # asdf-pandoc-crossref [![Build](https://github.com/sys9kdr/asdf-pandoc-crossref/actions/workflows/build.yml/badge.svg)](https://github.com/sys9kdr/asdf-pandoc-crossref/actions/workflows/build.yml) [![Lint](https://github.com/sys9kdr/asdf-pandoc-crossref/actions/workflows/lint.yml/badge.svg)](https://github.com/sys9kdr/asdf-pandoc-crossref/actions/workflows/lint.yml)
