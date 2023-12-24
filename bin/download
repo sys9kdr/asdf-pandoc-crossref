@@ -22,7 +22,7 @@ download_url="${DOWNLOAD_URL_PREFIX}/v${ASDF_INSTALL_VERSION}/${download_file}"
 download_release "$ASDF_INSTALL_VERSION" "$download_file" "$download_url"
 
 #  Extract contents of tar.gz file into the download directory
-tar -xf "$download_file" -C "$ASDF_DOWNLOAD_PATH" || fail "Could not extract $release_file"
+tar -xf "$download_file" -C "$ASDF_DOWNLOAD_PATH" || fail "Could not extract $download_file"
 
 # Remove the tar.gz file since we don't need to keep it
 rm "$download_file"

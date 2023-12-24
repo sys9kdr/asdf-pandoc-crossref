@@ -23,8 +23,9 @@ sort_versions() {
 }
 
 compare_versions() {
-	local IFS=.
-	local i version1=($1) version2=($2)
+	local i version1 version2
+	IFS=. read -r -a version1 <<<"$1"
+	IFS=. read -r -a version2 <<<"$2"
 
 	# Fill empty fields with zeros
 	for ((i = ${#version1[@]}; i < ${#version2[@]}; i++)); do
