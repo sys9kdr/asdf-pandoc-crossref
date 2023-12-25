@@ -62,9 +62,7 @@ list_github_tags() {
 }
 
 list_all_versions() {
-	# TODO: Adapt this. By default we simply list the tag names from GitHub releases.
-	# Change this function if pandoc-crossref has other means of determining installable versions.
-	list_github_tags
+	list_github_tags | grep -v 'nightlies' # This plugin doesn't support not 'v[0-9\.]' style.
 }
 
 download_release() {
