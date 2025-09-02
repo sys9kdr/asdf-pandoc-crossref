@@ -10,19 +10,70 @@ source "${plugin_dir}/lib/utils.bash"
 
 mkdir -p "$ASDF_DOWNLOAD_PATH"
 
-# TODO: Adapt this to proper extension and adapt extracting strategy.
-# pandoc-crossref-Linux.tar.xz
-# pandoc-crossref-macOS.tar.xz
-# pandoc-crossref-Windows.7z
-download_file="$TOOL_NAME-$(get_os).tar.xz"
+get_architecture() {
+  local arch
+  arch=$(uname -m)
+  case "$arch" in
+    x86_64)
+      echo "X64"
+      ;;
+    arm64 | aarch64)
+      echo "ARM64"
+      ;;
+    *)
+      fail "Unsupported architecture: $arch"
+      ;;
+  esac
+}
 
-# Download tar.gz file to the download directory
+get_file_extension() {
+  local os="$1"
+  case "$os" in
+    Windows)
+      echo "7z"
+      ;;
+    *)
+      echo "tar.xz"
+      ;;
+  esac
+}
+
+# Get OS, architecture, and file extension
+os=$(get_os)
+arch=$(get_architecture)
+extension=$(get_file_extension "$os")
+
+# Compare versions to determine filename format
+use_arch_in_filename=true
+if [[ "$(printf '%s\n' "0.3.18.0a" "$ASDF_INSTALL_VERSION" | sort -V | head -n1)" == "$ASDF_INSTALL_VERSION" ]]; then
+  use_arch_in_filename=false
+fi
+
+# Construct download filename with architecture
+if $use_arch_in_filename; then
+  download_file="$TOOL_NAME-${os}-${arch}.${extension}"
+else
+  download_file="$TOOL_NAME-${os}.${extension}"
+fi
+
+# Download file to the download directory
 DOWNLOAD_URL_PREFIX="https://github.com/lierdakil/pandoc-crossref/releases/download"
 download_url="${DOWNLOAD_URL_PREFIX}/v${ASDF_INSTALL_VERSION}/${download_file}"
 download_release "$ASDF_INSTALL_VERSION" "$download_file" "$download_url"
 
-#  Extract contents of tar.gz file into the download directory
-tar -xf "$download_file" -C "$ASDF_DOWNLOAD_PATH" || fail "Could not extract $download_file"
+# Extract contents based on file type
+case "$extension" in
+  "tar.xz")
+    tar -xf "$download_file" -C "$ASDF_DOWNLOAD_PATH" || fail "Could not extract $download_file"
+    ;;
+  "7z")
+    # Note: This requires 7z to be installed on the system
+    7z x "$download_file" -o"$ASDF_DOWNLOAD_PATH" || fail "Could not extract $download_file"
+    ;;
+  *)
+    fail "Unsupported file extension: $extension"
+    ;;
+esac
 
-# Remove the tar.gz file since we don't need to keep it
+# Remove the downloaded file since we don't need to keep it
 rm "$download_file"
