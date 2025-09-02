@@ -43,8 +43,18 @@ os=$(get_os)
 arch=$(get_architecture)
 extension=$(get_file_extension "$os")
 
+# Compare versions to determine filename format
+use_arch_in_filename=true
+if [[ "$(printf '%s\n' "0.3.18.0a" "$ASDF_INSTALL_VERSION" | sort -V | head -n1)" == "$ASDF_INSTALL_VERSION" ]]; then
+  use_arch_in_filename=false
+fi
+
 # Construct download filename with architecture
-download_file="$TOOL_NAME-${os}-${arch}.${extension}"
+if $use_arch_in_filename; then
+  download_file="$TOOL_NAME-${os}-${arch}.${extension}"
+else
+  download_file="$TOOL_NAME-${os}.${extension}"
+fi
 
 # Download file to the download directory
 DOWNLOAD_URL_PREFIX="https://github.com/lierdakil/pandoc-crossref/releases/download"
