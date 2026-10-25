@@ -11,31 +11,31 @@ source "${plugin_dir}/lib/utils.bash"
 mkdir -p "$ASDF_DOWNLOAD_PATH"
 
 get_architecture() {
-  local arch
-  arch=$(uname -m)
-  case "$arch" in
-    x86_64)
-      echo "X64"
-      ;;
-    arm64 | aarch64)
-      echo "ARM64"
-      ;;
-    *)
-      fail "Unsupported architecture: $arch"
-      ;;
-  esac
+	local arch
+	arch=$(uname -m)
+	case "$arch" in
+	x86_64)
+		echo "X64"
+		;;
+	arm64 | aarch64)
+		echo "ARM64"
+		;;
+	*)
+		fail "Unsupported architecture: $arch"
+		;;
+	esac
 }
 
 get_file_extension() {
-  local os="$1"
-  case "$os" in
-    Windows)
-      echo "7z"
-      ;;
-    *)
-      echo "tar.xz"
-      ;;
-  esac
+	local os="$1"
+	case "$os" in
+	Windows)
+		echo "7z"
+		;;
+	*)
+		echo "tar.xz"
+		;;
+	esac
 }
 
 # Get OS, architecture, and file extension
@@ -46,14 +46,14 @@ extension=$(get_file_extension "$os")
 # Compare versions to determine filename format
 use_arch_in_filename=true
 if [[ "$(printf '%s\n' "0.3.18.0a" "$ASDF_INSTALL_VERSION" | sort -V | head -n1)" == "$ASDF_INSTALL_VERSION" ]]; then
-  use_arch_in_filename=false
+	use_arch_in_filename=false
 fi
 
 # Construct download filename with architecture
 if $use_arch_in_filename; then
-  download_file="$TOOL_NAME-${os}-${arch}.${extension}"
+	download_file="$TOOL_NAME-${os}-${arch}.${extension}"
 else
-  download_file="$TOOL_NAME-${os}.${extension}"
+	download_file="$TOOL_NAME-${os}.${extension}"
 fi
 
 # Download file to the download directory
@@ -63,16 +63,16 @@ download_release "$ASDF_INSTALL_VERSION" "$download_file" "$download_url"
 
 # Extract contents based on file type
 case "$extension" in
-  "tar.xz")
-    tar -xf "$download_file" -C "$ASDF_DOWNLOAD_PATH" || fail "Could not extract $download_file"
-    ;;
-  "7z")
-    # Note: This requires 7z to be installed on the system
-    7z x "$download_file" -o"$ASDF_DOWNLOAD_PATH" || fail "Could not extract $download_file"
-    ;;
-  *)
-    fail "Unsupported file extension: $extension"
-    ;;
+"tar.xz")
+	tar -xf "$download_file" -C "$ASDF_DOWNLOAD_PATH" || fail "Could not extract $download_file"
+	;;
+"7z")
+	# Note: This requires 7z to be installed on the system
+	7z x "$download_file" -o"$ASDF_DOWNLOAD_PATH" || fail "Could not extract $download_file"
+	;;
+*)
+	fail "Unsupported file extension: $extension"
+	;;
 esac
 
 # Remove the downloaded file since we don't need to keep it
