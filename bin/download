@@ -26,19 +26,148 @@ get_architecture() {
 	esac
 }
 
-get_file_extension() {
-	local os="$1"
+version_ge() {
+	[ "$(printf '%s\n' "$1" "$2" | sort -V | head -n1)" = "$2" ]
+}
+
+version_gt() {
+	[ "$1" != "$2" ] && version_ge "$1" "$2"
+}
+
+get_legacy_download_file() {
+	local version="$1"
+	local os="$2"
+	local suffix variant windows_file windows_suffix
+
+	# 0.3.6.2a-0.3.7.0a: pandoc-crossref-<OS>-<pandoc>.tar.xz / .7z
+	case "$version" in
+	0.3.7.0a) suffix="2.10.1" ;;
+	0.3.7.0) suffix="2.10" ;;
+	0.3.6.4 | 0.3.6.3 | 0.3.6.2a) suffix="2.9.2.1" ;;
+	*) suffix="" ;;
+	esac
+
+	if [ -n "$suffix" ]; then
+		case "$os" in
+		Linux | macOS) echo "$TOOL_NAME-${os}-${suffix}.tar.xz" ;;
+		Windows) echo "$TOOL_NAME-Windows-${suffix}.7z" ;;
+		*) return 1 ;;
+		esac
+		return 0
+	fi
+
+	# 0.3.4.0b-0.3.6.2: OS-prefixed pandoc_<version> assets.
+	# Linux/macOS use underscores, while Windows uses dots.
+	case "$version" in
+	0.3.6.2) suffix="2_9_2" ;;
+	0.3.6.1b) suffix="2_9_1_1" ;;
+	0.3.6.1a) suffix="2_9_1" ;;
+	0.3.6.1 | 0.3.6.0) suffix="2_9" ;;
+	0.3.5.0b) suffix="2_8_1" ;;
+	0.3.5.0a) suffix="2_8_0_1" ;;
+	0.3.5.0) suffix="2_8" ;;
+	0.3.4.2 | 0.3.4.1a) suffix="2_7_3" ;;
+	0.3.4.1) suffix="2_7_2" ;;
+	0.3.4.0d) suffix="2_7" ;;
+	0.3.4.0c) suffix="2_6" ;;
+	0.3.4.0b) suffix="2_5" ;;
+	*) suffix="" ;;
+	esac
+
+	if [ -n "$suffix" ]; then
+		case "$os" in
+		Linux) echo "linux-pandoc_${suffix}.tar.gz" ;;
+		macOS) echo "macos-pandoc_${suffix}.tar.gz" ;;
+		Windows)
+			if [ "$version" = "0.3.4.1" ]; then
+				windows_suffix="2.7"
+			else
+				windows_suffix="${suffix//_/.}"
+			fi
+			echo "windows-x86_64-pandoc_${windows_suffix}.zip"
+			;;
+		*) return 1 ;;
+		esac
+		return 0
+	fi
+
+	# 0.3.0.0-0.3.4.0a: GHC-based asset names, with a few version-specific cases.
+	case "$version" in
+	0.3.4.0a)
+		case "$os" in
+		Linux) echo "linux-ghc84-pandoc25-static.tar.gz" ;;
+		macOS) echo "osx-ghc86-pandoc25.tar.gz" ;;
+		Windows) echo "windows-x86_64-pandoc_2.5.zip" ;;
+		*) return 1 ;;
+		esac
+		return 0
+		;;
+	0.3.4.0)
+		variant="ghc86-pandoc24"
+		windows_file="windows-ghc86-pandoc24.zip"
+		;;
+	0.3.3.0)
+		variant="ghc84-pandoc23"
+		windows_file="windows-ghc84-pandoc23.zip"
+		;;
+	0.3.2.1)
+		variant="ghc84-pandoc22"
+		windows_file="windows-ghc84-pandoc22.zip"
+		;;
+	0.3.2.0)
+		variant="ghc84-pandoc22"
+		windows_file=""
+		;;
+	0.3.1.0 | 0.3.0.2)
+		variant="ghc82-pandoc21"
+		windows_file="windows-ghc82-pandoc21.zip"
+		;;
+	0.3.0.1)
+		variant="ghc82-pandoc20"
+		windows_file="windows-ghc82-pandoc20.zip"
+		;;
+	0.3.0.0)
+		variant="ghc8-pandoc-2-0"
+		windows_file="windows-ghc8-pandoc2-0.zip"
+		;;
+	*) return 1 ;;
+	esac
+
 	case "$os" in
+	Linux) echo "linux-${variant}.tar.gz" ;;
+	macOS) echo "osx-${variant}.tar.gz" ;;
 	Windows)
-		echo "7z"
+		if [ -n "$windows_file" ]; then
+			echo "$windows_file"
+		else
+			return 1
+		fi
 		;;
-	*)
-		echo "tar.xz"
-		;;
+	*) return 1 ;;
 	esac
 }
 
-# Get OS, architecture, and file extension
+get_download_file() {
+	local version="$1"
+	local os="$2"
+	local arch="$3"
+
+	if version_gt "$version" "0.3.18.0a"; then
+		case "$os" in
+		Windows) echo "$TOOL_NAME-${os}-${arch}.7z" ;;
+		*) echo "$TOOL_NAME-${os}-${arch}.tar.xz" ;;
+		esac
+	elif version_ge "$version" "0.3.8.0"; then
+		case "$os" in
+		Windows) echo "$TOOL_NAME-${os}.7z" ;;
+		*) echo "$TOOL_NAME-${os}.tar.xz" ;;
+		esac
+	else
+		get_legacy_download_file "$version" "$os"
+	fi
+}
+
+# Get OS and architecture
 os=$(get_os)
 case "$os" in
 Linux | macOS | Windows) ;;
@@ -47,23 +176,25 @@ Linux | macOS | Windows) ;;
 	;;
 esac
 arch=$(get_architecture)
-extension=$(get_file_extension "$os")
 
-if [[ "$extension" == "7z" ]] && ! command -v 7z >/dev/null 2>&1; then
-	fail "Extracting $TOOL_NAME on Windows requires '7z' (7-Zip). Install it and ensure it is on PATH."
+if ! download_file=$(get_download_file "$ASDF_INSTALL_VERSION" "$os" "$arch"); then
+	fail "No supported prebuilt asset for $TOOL_NAME $ASDF_INSTALL_VERSION on $os. Check the upstream release assets: https://github.com/lierdakil/pandoc-crossref/releases/tag/v${ASDF_INSTALL_VERSION}"
 fi
 
-# Compare versions to determine filename format
-use_arch_in_filename=true
-if [[ "$(printf '%s\n' "0.3.18.0a" "$ASDF_INSTALL_VERSION" | sort -V | head -n1)" == "$ASDF_INSTALL_VERSION" ]]; then
-	use_arch_in_filename=false
+if ! version_gt "$ASDF_INSTALL_VERSION" "0.3.18.0a" && [ "$os" = "Linux" ] && [ "$arch" != "X64" ]; then
+	fail "Legacy $TOOL_NAME releases only provide Linux x86_64 binaries (detected $arch)."
 fi
 
-# Construct download filename with architecture
-if $use_arch_in_filename; then
-	download_file="$TOOL_NAME-${os}-${arch}.${extension}"
-else
-	download_file="$TOOL_NAME-${os}.${extension}"
+case "$download_file" in
+*.tar.xz) extension="tar.xz" ;;
+*.tar.gz) extension="tar.gz" ;;
+*.7z) extension="7z" ;;
+*.zip) extension="zip" ;;
+*) fail "Unsupported archive format: $download_file" ;;
+esac
+
+if [[ "$extension" == "7z" || "$extension" == "zip" ]] && ! command -v 7z >/dev/null 2>&1; then
+	fail "Extracting $TOOL_NAME from .7z or .zip archives requires '7z' (7-Zip). Install it and ensure it is on PATH."
 fi
 
 # Download file to the download directory
@@ -73,10 +204,10 @@ download_release "$ASDF_INSTALL_VERSION" "$download_file" "$download_url"
 
 # Extract contents based on file type
 case "$extension" in
-"tar.xz")
+"tar.xz" | "tar.gz")
 	tar -xf "$download_file" -C "$ASDF_DOWNLOAD_PATH" || fail "Could not extract $download_file"
 	;;
-"7z")
+"7z" | "zip")
 	# Note: This requires 7z to be installed on the system
 	7z x "$download_file" -o"$ASDF_DOWNLOAD_PATH" || fail "Could not extract $download_file"
 	;;
