@@ -9,6 +9,7 @@
 # Contents
 
 - [Dependencies](#dependencies)
+- [Supported versions](#supported-versions)
 - [Install](#install)
 - [Contributing](#contributing)
 - [License](#license)
@@ -17,9 +18,18 @@
 
 - `bash`, `curl`, `tar`, and [POSIX utilities](https://pubs.opengroup.org/onlinepubs/9699919799/idx/utilities.html).
 - `xz` support for `tar` on Linux and macOS (the release archives are `.tar.xz`).
-- `7z` (7-Zip) on Windows, required to extract the `.7z` release archive.
+- `7z` (7-Zip) on Windows, required to extract the `.7z` and legacy `.zip` release archives.
 
 Architecture support follows the upstream release assets. For example, macOS ARM64 and x86_64 builds are published, while Linux ARM64 is not published as of `0.3.20`.
+
+# Supported versions
+
+The plugin installs the prebuilt binaries published by upstream. In addition to current releases, it supports the legacy asset names used by:
+
+- `0.3.8.0` through `0.3.18.0a`
+- `0.3.0.0` through `0.3.7.0a`
+
+Legacy releases only provide x86_64 binaries; Linux ARM64 is rejected with an error. Versions before `0.3.0.0` are not supported: `0.1.5.3` publishes only a source tarball, and `0.2.x` assets are not handled by this plugin. Some individual releases have no asset for a particular OS (for example, `0.3.2.0` on Windows, or `0.3.0.3` entirely); installation then fails with a clear error.
 
 # Install
 
