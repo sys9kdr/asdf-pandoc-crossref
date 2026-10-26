@@ -7,7 +7,7 @@ TOOL_NAME="pandoc-crossref"
 TOOL_TEST="pandoc-crossref --help"
 
 fail() {
-	echo -e "asdf-$TOOL_NAME: $*"
+	echo -e "asdf-$TOOL_NAME: $*" >&2
 	exit 1
 }
 
@@ -72,7 +72,8 @@ download_release() {
 	url="$3"
 
 	echo "* Downloading $TOOL_NAME release $version..."
-	curl "${curl_opts[@]}" -o "$filename" -C - "$url" || fail "Could not download $url"
+	curl "${curl_opts[@]}" -o "$filename" -C - "$url" ||
+		fail "Could not download $url (the upstream release may not include an asset for this OS/architecture)."
 }
 
 install_version() {
