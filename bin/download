@@ -21,7 +21,7 @@ get_architecture() {
 		echo "ARM64"
 		;;
 	*)
-		fail "Unsupported architecture: $arch"
+		fail "Unsupported architecture: $arch (supported: x86_64, arm64, aarch64)"
 		;;
 	esac
 }
@@ -40,8 +40,18 @@ get_file_extension() {
 
 # Get OS, architecture, and file extension
 os=$(get_os)
+case "$os" in
+Linux | macOS | Windows) ;;
+*)
+	fail "Unsupported operating system: $os. pandoc-crossref upstream does not publish builds for this OS."
+	;;
+esac
 arch=$(get_architecture)
 extension=$(get_file_extension "$os")
+
+if [[ "$extension" == "7z" ]] && ! command -v 7z >/dev/null 2>&1; then
+	fail "Extracting $TOOL_NAME on Windows requires '7z' (7-Zip). Install it and ensure it is on PATH."
+fi
 
 # Compare versions to determine filename format
 use_arch_in_filename=true

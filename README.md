@@ -15,10 +15,11 @@
 
 # Dependencies
 
-**TODO: adapt this section**
-
 - `bash`, `curl`, `tar`, and [POSIX utilities](https://pubs.opengroup.org/onlinepubs/9699919799/idx/utilities.html).
-- `SOME_ENV_VAR`: set this environment variable in your shell config to load the correct version of tool x.
+- `xz` support for `tar` on Linux and macOS (the release archives are `.tar.xz`).
+- `7z` (7-Zip) on Windows, required to extract the `.7z` release archive.
+
+Architecture support follows the upstream release assets. For example, macOS ARM64 and x86_64 builds are published, while Linux ARM64 is not published as of `0.3.20`.
 
 # Install
 
