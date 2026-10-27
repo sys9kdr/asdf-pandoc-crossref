@@ -177,6 +177,10 @@ Linux | macOS | Windows) ;;
 esac
 arch=$(get_architecture)
 
+if ! is_supported_version "$ASDF_INSTALL_VERSION" "$os"; then
+	fail "Version $ASDF_INSTALL_VERSION is not supported by this plugin on $os. Supported versions are listed in README.md and by 'asdf list-all pandoc-crossref'."
+fi
+
 if ! download_file=$(get_download_file "$ASDF_INSTALL_VERSION" "$os" "$arch"); then
 	fail "No supported prebuilt asset for $TOOL_NAME $ASDF_INSTALL_VERSION on $os. Check the upstream release assets: https://github.com/lierdakil/pandoc-crossref/releases/tag/v${ASDF_INSTALL_VERSION}"
 fi
