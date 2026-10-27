@@ -61,8 +61,30 @@ list_github_tags() {
 		sed 's/^v//' # NOTE: You might want to adapt this sed to remove non-version strings from tags
 }
 
+is_supported_version() {
+	local version="$1"
+	local os="${2:-$(get_os)}"
+
+	case "$version" in
+	0.1.* | 0.2.* | 0.3.0.0-* | 0.3.0.3 | 0.4.0.0-alpha*)
+		return 1
+		;;
+	esac
+
+	# Upstream did not publish a Windows asset for this release.
+	if [ "$version" = "0.3.2.0" ] && [ "$os" = "Windows" ]; then
+		return 1
+	fi
+
+	return 0
+}
+
 list_all_versions() {
-	list_github_tags | grep -v 'nightlies' # This plugin doesn't support not 'v[0-9\.]' style.
+	list_github_tags | grep -v 'nightlies' | while IFS= read -r version; do
+		if is_supported_version "$version"; then
+			printf '%s\n' "$version"
+		fi
+	done
 }
 
 download_release() {
